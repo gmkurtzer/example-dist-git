@@ -1,0 +1,40 @@
+From 686002d8cd9d41f0a4b7915be9866979c25bd5d7 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Matej=20Mu=C5=BEila?= <mmuzila@redhat.com>
+Date: Thu, 5 May 2022 14:38:04 +0200
+Subject: [PATCH] Back off the minimum required automake version to 1.11.
+
+There isn't anything in libtiff currently that actually requires 1.12,
+and changing this allows the package to be built on pre-F18 machines for
+easier testing. This patch can go away once we no longer care about
+testing on pre-F18.
+---
+ Makefile.am      | 2 +-
+ test/Makefile.am | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index 418a3b93..fa8bf4c0 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -25,7 +25,7 @@
+ 
+ docdir = $(LIBTIFF_DOCDIR)
+ 
+-AUTOMAKE_OPTIONS = 1.12 dist-zip foreign
++AUTOMAKE_OPTIONS = 1.11 dist-zip foreign
+ ACLOCAL_AMFLAGS = -I m4
+ 
+ docfiles = \
+diff --git a/test/Makefile.am b/test/Makefile.am
+index 2052487c..227f228f 100644
+--- a/test/Makefile.am
++++ b/test/Makefile.am
+@@ -23,7 +23,7 @@
+ 
+ # Process this file with automake to produce Makefile.in.
+ 
+-AUTOMAKE_OPTIONS = 1.12 color-tests parallel-tests foreign
++AUTOMAKE_OPTIONS = 1.11 color-tests parallel-tests foreign
+ 
+ LIBTIFF = $(top_builddir)/libtiff/libtiff.la
+ 

@@ -1,0 +1,21 @@
+From 42425abcf2204e46544aff5cd95a129944e15894 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Matej=20Mu=C5=BEila?= <mmuzila@redhat.com>
+Date: Thu, 5 May 2022 14:42:52 +0200
+Subject: [PATCH] Fix Makefile
+
+---
+ html/man/Makefile.am | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/html/man/Makefile.am b/html/man/Makefile.am
+index 3ed00d44..8a64925a 100644
+--- a/html/man/Makefile.am
++++ b/html/man/Makefile.am
+@@ -90,7 +90,6 @@ docfiles = \
+ 	tiffcrop.1.html \
+ 	tiffdither.1.html \
+ 	tiffdump.1.html \
+-	tiffgt.1.html \
+ 	tiffinfo.1.html \
+ 	tiffmedian.1.html \
+ 	tiffset.1.html \

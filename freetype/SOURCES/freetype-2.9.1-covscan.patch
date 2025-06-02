@@ -1,0 +1,178 @@
+--- freetype-2.9.1/builds/unix/freetype-config.in
++++ freetype-2.9.1/builds/unix/freetype-config.in
+@@ -32,9 +32,6 @@ cflags=`%PKG_CONFIG% --cflags freetype2`
+ dynamic_libs=`pkgconf --libs freetype2`
+ static_libs=`pkgconf --static --libs freetype2`
+ 
+-orig_prefix=$prefix
+-orig_exec_prefix=$exec_prefix
+-
+ orig_includedir=$includedir
+ orig_libdir=$libdir
+ 
+--- freetype-2.9.1/ft2demos-2.9.1/src/ftbench.c
++++ freetype-2.9.1/ft2demos-2.9.1/src/ftbench.c
+@@ -749,6 +749,7 @@
+         {
+           fprintf( stderr,
+                    "couldn't allocate memory to pre-load font file\n" );
++          fclose( file );
+ 
+           return 1;
+         }
+@@ -758,9 +759,12 @@
+           fprintf( stderr, "read error\n" );
+           free( memory_file );
+           memory_file = NULL;
++          fclose( file );
+ 
+           return 1;
+         }
++
++        fclose( file );
+       }
+ 
+       error = FT_New_Memory_Face( lib,
+--- freetype-2.9.1/ft2demos-2.9.1/src/ftchkwd.c
++++ freetype-2.9.1/ft2demos-2.9.1/src/ftchkwd.c
+@@ -118,8 +118,8 @@
+     FT_Library  library;
+ 
+     int         i, file_index;
+-    char        filename[1024 + 4];
+-    char        alt_filename[1024 + 4];
++    char        filename[1024 + 5];
++    char        alt_filename[1024 + 5];
+     char*       execname;
+     char*       fname;
+ 
+@@ -169,8 +169,8 @@
+ #ifndef macintosh
+       if ( i >= 0 )
+       {
+-        strncpy( filename + strlen( filename ), ".ttf", 4 );
+-        strncpy( alt_filename + strlen( alt_filename ), ".ttc", 4 );
++        strncpy( filename + strlen( filename ), ".ttf", 5 );
++        strncpy( alt_filename + strlen( alt_filename ), ".ttc", 5 );
+       }
+ #endif
+ 
+--- freetype-2.9.1/ft2demos-2.9.1/src/ftcommon.c
++++ freetype-2.9.1/ft2demos-2.9.1/src/ftcommon.c
+@@ -110,7 +110,10 @@
+ 
+     if ( mode != gr_pixel_mode_gray  &&
+          mode != gr_pixel_mode_rgb24 )
++    {
++      free( display );
+       return NULL;
++    }
+ 
+     grInitDevices();
+ 
+--- freetype-2.9.1/ft2demos-2.9.1/src/ftdump.c
++++ freetype-2.9.1/ft2demos-2.9.1/src/ftdump.c
+@@ -775,8 +775,8 @@
+         char*  argv[] )
+   {
+     int    i, file;
+-    char   filename[1024 + 4];
+-    char   alt_filename[1024 + 4];
++    char   filename[1024 + 5];
++    char   alt_filename[1024 + 5];
+     char*  execname;
+     int    num_faces;
+     int    option;
+@@ -872,8 +872,8 @@
+ 
+     if ( i >= 0 )
+     {
+-      strncpy( filename + strlen( filename ), ".ttf", 4 );
+-      strncpy( alt_filename + strlen( alt_filename ), ".ttc", 4 );
++      strncpy( filename + strlen( filename ), ".ttf", 5 );
++      strncpy( alt_filename + strlen( alt_filename ), ".ttc", 5 );
+     }
+ #endif
+ 
+--- freetype-2.9.1/ft2demos-2.9.1/src/ftgrid.c
++++ freetype-2.9.1/ft2demos-2.9.1/src/ftgrid.c
+@@ -662,6 +662,7 @@
+         break;
+ 
+       default:
++        free( t );
+         return;
+     }
+ 
+--- freetype-2.9.1/ft2demos-2.9.1/src/ftlint.c
++++ freetype-2.9.1/ft2demos-2.9.1/src/ftlint.c
+@@ -62,8 +62,8 @@
+   {
+     int           i, file_index;
+     unsigned int  id;
+-    char          filename[1024 + 4];
+-    char          alt_filename[1024 + 4];
++    char          filename[1024 + 5];
++    char          alt_filename[1024 + 5];
+     char*         execname;
+     char*         fname;
+ 
+@@ -119,8 +119,8 @@
+ #ifndef macintosh
+       if ( i >= 0 )
+       {
+-        strncpy( filename + strlen( filename ), ".ttf", 4 );
+-        strncpy( alt_filename + strlen( alt_filename ), ".ttc", 4 );
++        strncpy( filename + strlen( filename ), ".ttf", 5 );
++        strncpy( alt_filename + strlen( alt_filename ), ".ttc", 5 );
+       }
+ #endif
+       i     = (int)strlen( filename );
+--- freetype-2.9.1/ft2demos-2.9.1/src/ftmemchk.c
++++ freetype-2.9.1/ft2demos-2.9.1/src/ftmemchk.c
+@@ -227,8 +227,8 @@ int  main( int argc, char** argv )
+ {
+     int           i, file_index;
+     unsigned int  id;
+-    char          filename[1024 + 4];
+-    char          alt_filename[1024 + 4];
++    char          filename[1024 + 5];
++    char          alt_filename[1024 + 5];
+     char*         execname;
+     char*         fname;
+ 
+@@ -270,8 +270,8 @@ int  main( int argc, char** argv )
+ #ifndef macintosh
+       if ( i >= 0 )
+       {
+-        strncpy( filename + strlen( filename ), ".ttf", 4 );
+-        strncpy( alt_filename + strlen( alt_filename ), ".ttc", 4 );
++        strncpy( filename + strlen( filename ), ".ttf", 5 );
++        strncpy( alt_filename + strlen( alt_filename ), ".ttc", 5 );
+       }
+ #endif
+       i     = strlen( filename );
+--- freetype-2.9.1/ft2demos-2.9.1/src/fttimer.c
++++ freetype-2.9.1/ft2demos-2.9.1/src/fttimer.c
+@@ -162,8 +162,8 @@
+         char**  argv )
+   {
+     int    i, total, base, rendered_glyphs;
+-    char   filename[1024 + 4];
+-    char   alt_filename[1024 + 4];
++    char   filename[1024 + 5];
++    char   alt_filename[1024 + 5];
+ 
+     long   t, t0, tz0;
+ 
+@@ -230,8 +230,8 @@
+ 
+     if ( i >= 0 )
+     {
+-      strncpy( filename + strlen( filename ), ".ttf", 4 );
+-      strncpy( alt_filename + strlen( alt_filename ), ".ttc", 4 );
++      strncpy( filename + strlen( filename ), ".ttf", 5 );
++      strncpy( alt_filename + strlen( alt_filename ), ".ttc", 5 );
+     }
+ 
+     /* Initialize engine */

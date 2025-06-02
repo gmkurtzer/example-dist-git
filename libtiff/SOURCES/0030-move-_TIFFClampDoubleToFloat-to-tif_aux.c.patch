@@ -1,0 +1,161 @@
+From 9ed8c91366c9f6a3c9068aee6c5a7a0fe1c5c9c8 Mon Sep 17 00:00:00 2001
+From: Thomas Bernard <miniupnp@free.fr>
+Date: Tue, 12 Feb 2019 16:04:28 +0100
+Subject: [PATCH] move _TIFFClampDoubleToFloat() to tif_aux.c
+
+the same function was declared in tif_dir.c and tif_dirwrite.c
+
+see http://bugzilla.maptools.org/show_bug.cgi?id=2842
+
+(cherry picked from commit 8420a31e8ca5181ca36580cfeeca28661b348262)
+---
+ libtiff/tif_aux.c      | 10 ++++++++++
+ libtiff/tif_dir.c      | 20 +++++---------------
+ libtiff/tif_dirwrite.c | 12 +-----------
+ libtiff/tiffiop.h      |  2 ++
+ 4 files changed, 18 insertions(+), 26 deletions(-)
+
+diff --git a/libtiff/tif_aux.c b/libtiff/tif_aux.c
+index 38a98b67..2071d19c 100644
+--- a/libtiff/tif_aux.c
++++ b/libtiff/tif_aux.c
+@@ -32,6 +32,7 @@
+ #include "tiffiop.h"
+ #include "tif_predict.h"
+ #include <math.h>
++#include <float.h>
+ 
+ uint32
+ _TIFFMultiply32(TIFF* tif, uint32 first, uint32 second, const char* where)
+@@ -398,6 +399,15 @@ _TIFFUInt64ToDouble(uint64 ui64)
+ 	}
+ }
+ 
++float _TIFFClampDoubleToFloat( double val )
++{
++    if( val > FLT_MAX )
++        return FLT_MAX;
++    if( val < -FLT_MAX )
++        return -FLT_MAX;
++    return (float)val;
++}
++
+ int _TIFFSeekOK(TIFF* tif, toff_t off)
+ {
+     /* Huge offsets, especially -1 / UINT64_MAX, can cause issues */
+diff --git a/libtiff/tif_dir.c b/libtiff/tif_dir.c
+index f126f2aa..ad550c65 100644
+--- a/libtiff/tif_dir.c
++++ b/libtiff/tif_dir.c
+@@ -31,7 +31,6 @@
+  * (and also some miscellaneous stuff)
+  */
+ #include "tiffiop.h"
+-#include <float.h>
+ 
+ /*
+  * These are used in the backwards compatibility code...
+@@ -155,15 +154,6 @@ bad:
+ 	return (0);
+ }
+ 
+-static float TIFFClampDoubleToFloat( double val )
+-{
+-    if( val > FLT_MAX )
+-        return FLT_MAX;
+-    if( val < -FLT_MAX )
+-        return -FLT_MAX;
+-    return (float)val;
+-}
+-
+ static int
+ _TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
+ {
+@@ -322,13 +312,13 @@ _TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
+         dblval = va_arg(ap, double);
+         if( dblval != dblval || dblval < 0 )
+             goto badvaluedouble;
+-		td->td_xresolution = TIFFClampDoubleToFloat( dblval );
++		td->td_xresolution = _TIFFClampDoubleToFloat( dblval );
+ 		break;
+ 	case TIFFTAG_YRESOLUTION:
+         dblval = va_arg(ap, double);
+         if( dblval != dblval || dblval < 0 )
+             goto badvaluedouble;
+-		td->td_yresolution = TIFFClampDoubleToFloat( dblval );
++		td->td_yresolution = _TIFFClampDoubleToFloat( dblval );
+ 		break;
+ 	case TIFFTAG_PLANARCONFIG:
+ 		v = (uint16) va_arg(ap, uint16_vap);
+@@ -337,10 +327,10 @@ _TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
+ 		td->td_planarconfig = (uint16) v;
+ 		break;
+ 	case TIFFTAG_XPOSITION:
+-		td->td_xposition = TIFFClampDoubleToFloat( va_arg(ap, double) );
++		td->td_xposition = _TIFFClampDoubleToFloat( va_arg(ap, double) );
+ 		break;
+ 	case TIFFTAG_YPOSITION:
+-		td->td_yposition = TIFFClampDoubleToFloat( va_arg(ap, double) );
++		td->td_yposition = _TIFFClampDoubleToFloat( va_arg(ap, double) );
+ 		break;
+ 	case TIFFTAG_RESOLUTIONUNIT:
+ 		v = (uint16) va_arg(ap, uint16_vap);
+@@ -686,7 +676,7 @@ _TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
+ 				case TIFF_SRATIONAL:
+ 				case TIFF_FLOAT:
+ 					{
+-						float v2 = TIFFClampDoubleToFloat(va_arg(ap, double));
++						float v2 = _TIFFClampDoubleToFloat(va_arg(ap, double));
+ 						_TIFFmemcpy(val, &v2, tv_size);
+ 					}
+ 					break;
+diff --git a/libtiff/tif_dirwrite.c b/libtiff/tif_dirwrite.c
+index 5d0a6699..03a9f296 100644
+--- a/libtiff/tif_dirwrite.c
++++ b/libtiff/tif_dirwrite.c
+@@ -30,7 +30,6 @@
+  * Directory Write Support Routines.
+  */
+ #include "tiffiop.h"
+-#include <float.h>
+ 
+ #ifdef HAVE_IEEEFP
+ #define TIFFCvtNativeToIEEEFloat(tif, n, fp)
+@@ -948,15 +947,6 @@ bad:
+ 	return(0);
+ }
+ 
+-static float TIFFClampDoubleToFloat( double val )
+-{
+-    if( val > FLT_MAX )
+-        return FLT_MAX;
+-    if( val < -FLT_MAX )
+-        return -FLT_MAX;
+-    return (float)val;
+-}
+-
+ static int8 TIFFClampDoubleToInt8( double val )
+ {
+     if( val > 127 )
+@@ -1031,7 +1021,7 @@ TIFFWriteDirectoryTagSampleformatArray(TIFF* tif, uint32* ndir, TIFFDirEntry* di
+ 			if (tif->tif_dir.td_bitspersample<=32)
+ 			{
+ 				for (i = 0; i < count; ++i)
+-					((float*)conv)[i] = TIFFClampDoubleToFloat(value[i]);
++					((float*)conv)[i] = _TIFFClampDoubleToFloat(value[i]);
+ 				ok = TIFFWriteDirectoryTagFloatArray(tif,ndir,dir,tag,count,(float*)conv);
+ 			}
+ 			else
+diff --git a/libtiff/tiffiop.h b/libtiff/tiffiop.h
+index d4b86314..05ba735b 100644
+--- a/libtiff/tiffiop.h
++++ b/libtiff/tiffiop.h
+@@ -377,6 +377,8 @@ extern void* _TIFFCheckRealloc(TIFF*, void*, tmsize_t, tmsize_t, const char*);
+ extern double _TIFFUInt64ToDouble(uint64);
+ extern float _TIFFUInt64ToFloat(uint64);
+ 
++extern float _TIFFClampDoubleToFloat(double);
++
+ extern tmsize_t
+ _TIFFReadEncodedStripAndAllocBuffer(TIFF* tif, uint32 strip,
+                                     void **buf, tmsize_t bufsizetoalloc,

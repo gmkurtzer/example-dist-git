@@ -1,0 +1,20 @@
+--- freetype-2.9.1/builds/unix/configure
++++ freetype-2.9.1/builds/unix/configure
+@@ -11853,6 +11853,8 @@ CC=$lt_save_CC
+ # Only expand once:
+ 
+ 
++if false
++then :
+ if test -n "$ac_tool_prefix"; then
+   # Extract the first word of "${ac_tool_prefix}windres", so it can be a program name with args.
+ set dummy ${ac_tool_prefix}windres; ac_word=$2
+@@ -12022,6 +12025,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
+ CC=$lt_save_CC
+ CFLAGS=$lt_save_CFLAGS
+ 
++fi
++
+ 
+ 
+ # checks for native programs to generate building tool
